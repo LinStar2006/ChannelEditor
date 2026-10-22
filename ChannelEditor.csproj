@@ -1,0 +1,79 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <OutputType>Library</OutputType>
+    <AssemblyName>ChannelEditor</AssemblyName>
+    <RootNamespace>ChannelEditor</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <!-- CS0618: Paint.NET 5 把 classic Effect 标记为已过时，但我们仍要继承它以获得自定义 WinForms 对话框 -->
+    <NoWarn>CS0618</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Paint.NET 5.1 运行时程序集：只引用不复制，运行时由 Paint.NET 自己提供 -->
+    <Reference Include="PaintDotNet.Base">
+      <HintPath>D:\App\Paint.NET\PaintDotNet.Base.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="PaintDotNet.Core">
+      <HintPath>D:\App\Paint.NET\PaintDotNet.Core.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="PaintDotNet.Effects.Core">
+      <HintPath>D:\App\Paint.NET\PaintDotNet.Effects.Core.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="PaintDotNet.Framework">
+      <HintPath>D:\App\Paint.NET\PaintDotNet.Framework.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="PaintDotNet.Primitives">
+      <HintPath>D:\App\Paint.NET\PaintDotNet.Primitives.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="PaintDotNet.Windows">
+      <HintPath>D:\App\Paint.NET\PaintDotNet.Windows.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="PaintDotNet.ComponentModel">
+      <HintPath>D:\App\Paint.NET\PaintDotNet.ComponentModel.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="PaintDotNet.Collections">
+      <HintPath>D:\App\Paint.NET\PaintDotNet.Collections.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="PaintDotNet.Fundamentals">
+      <HintPath>D:\App\Paint.NET\PaintDotNet.Fundamentals.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="PaintDotNet.PropertySystem">
+      <HintPath>D:\App\Paint.NET\PaintDotNet.PropertySystem.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="PaintDotNet.Data">
+      <HintPath>D:\App\Paint.NET\PaintDotNet.Data.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="PaintDotNet.ObjectModel">
+      <HintPath>D:\App\Paint.NET\PaintDotNet.ObjectModel.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="PaintDotNet.Base.Unsafe">
+      <HintPath>D:\App\Paint.NET\PaintDotNet.Base.Unsafe.dll</HintPath>
+      <Private>false</Private>
+      <Condition>Exists('D:\App\Paint.NET\PaintDotNet.Base.Unsafe.dll')</Condition>
+    </Reference>
+  </ItemGroup>
+
+</Project>

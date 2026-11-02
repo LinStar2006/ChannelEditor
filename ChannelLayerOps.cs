@@ -79,6 +79,53 @@ namespace ChannelEditor
         }
 
         /// <summary>
+        /// 把当前工具切换成矩形选择工具。合并会改写图层集合，画笔、铅笔这类绘制工具
+        /// 在合并时可能还握着旧图层的编辑事务，所以合并前先落到一个不依赖图层内容的
+        /// 工具上，避免合并后工具状态错乱。
+        /// </summary>
+        public static void SelectRectangleSelectTool()
+        {
+            object workspace = FindDocumentWorkspace();
+            if (workspace == null)
+            {
+                return;
+            }
+
+            Type toolType = ResolveType("PaintDotNet.Tools.RectangleSelectTool");
+            if (toolType == null)
+            {
+                return;
+            }
+
+            try
+            {
+                MethodInfo setTool = workspace.GetType().GetMethod("SetToolFromType", new[] { typeof(Type) });
+                if (setTool != null)
+                {
+                    setTool.Invoke(workspace, new object[] { toolType });
+                }
+            }
+            catch
+            {
+                // 切工具失败不该影响合并本身，忽略。
+            }
+        }
+
+        private static Type ResolveType(string fullName)
+        {
+            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                Type type = assembly.GetType(fullName, false);
+                if (type != null)
+                {
+                    return type;
+                }
+            }
+
+            return Type.GetType(fullName + ", paintdotnet", false);
+        }
+
+        /// <summary>
         /// 让某个图层的缩略图重新生成。图层面板的缩略图由 LayersStrip 的 OurThumbnailProvider
         /// 用「添加图层那一刻」拿到的 layerRenderer 快照渲染，直接改 Surface 内容它不会察觉，
         /// 必须先 InvalidateThumbnail 丢掉这个 provider，再 RefreshLayerThumbnail 重建。

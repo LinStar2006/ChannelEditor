@@ -350,6 +350,11 @@ namespace ChannelEditor
                     return;
                 }
 
+                // 合并之前先把工具切到矩形选择工具：画笔、铅笔这类绘制工具在合并
+                // 改写图层集合时可能还握着旧图层的编辑事务，先落到一个不依赖图层内容
+                // 的工具上更稳。必须在 MergeChannels 之前执行。
+                ChannelLayerOps.SelectRectangleSelectTool();
+
                 // 默认配置：生成一个新图层（不破坏原图），合并后删除四个通道图层
                 bool ok = ChannelLayerOps.MergeChannels(document, false, true, out string message);
                 document.Invalidate();

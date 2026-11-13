@@ -1,4 +1,4 @@
-# RGBA 通道编辑器（Paint.NET 5.1 插件）
+# RGBA 通道编辑器（Paint.NET 5.1 / 5.2 插件）
 
 在 Paint.NET 里把一张图的 R / G / B / A 四个通道**拆成独立图层**，像编辑普通图层那样
 用画笔、填充、渐变、任意滤镜去改，改完再**合并回一张图**。
@@ -8,7 +8,7 @@
 双击 `install.bat`。它会自己找到本机 Paint.NET 装在哪，然后装好插件。
 
 它会依次检查：注册表卸载项 → 运行中的进程 → 文件关联 → 常见安装路径，都没找到就
-扫描各个磁盘找 `paintdotnet.exe`；确认是 .NET 9 版（Paint.NET 5.1+）后，复制到
+扫描各个磁盘找 `paintdotnet.exe`；确认是 .NET 9+ 版（Paint.NET 5.1+）后，复制到
 `<Paint.NET 目录>\Effects\`，目录不可写时退回 `%LOCALAPPDATA%\paint.net\Effects\`，
 并删掉另一处可能重复加载的同名 DLL。
 
@@ -29,14 +29,27 @@ install.bat -PaintNetDir "D:\App\Paint.NET"    手动指定目录
 
 （或者 Paint.NET 程序目录下的 `Effects\`）
 
-重新编译安装：
+## 从源码编译
+
+`ChannelEditor.csproj` 里每个 `<Reference>` 的 `HintPath` 都指向 Paint.NET 安装目录下的
+`PaintDotNet.*.dll`，按你本机的路径改。
 
 ```powershell
-$env:PATH = "<dotnet 安装目录>;" + $env:PATH
 dotnet build ChannelEditor\ChannelEditor.csproj -c Release
 # 先关掉 Paint.NET，否则 DLL 被占用
-Copy-Item ChannelEditor\bin\Release\net9.0-windows\ChannelEditor.dll "<Paint.NET 安装目录>\Effects\ChannelEditor.dll" -Force
+# 产物在 ChannelEditor\bin\Release\<TargetFramework>\ChannelEditor.dll
+Copy-Item ChannelEditor\bin\Release\<TargetFramework>\ChannelEditor.dll "<Paint.NET 安装目录>\Effects\ChannelEditor.dll" -Force
 ```
+
+- **Paint.NET 5.1**：`<TargetFramework>` 用 `net9.0-windows`，引用 5.1 的 `PaintDotNet.*.dll`，可以直接编译。
+- **Paint.NET 5.2**：经典效果 API（`Effect` / `EffectConfigDialog`）被标成 **error 级**
+  `[Obsolete]`，编译报 `CS0619`，`#pragma warning disable` 和 `NoWarn` 都压不住；而且 5.2 的
+  `PaintDotNet.*.dll` 依赖 `System.Runtime 11.0.0.0`，必须配 `net11.0-windows`。所以**源码不能
+  直接用 5.2 的引用程序集编译**。
+
+已发布的 DLL 是在 5.1 引用程序集 + `net9.0-windows` 下编译，再用 Mono.Cecil 打两个 IL 补丁
+得到的（`Layer.Invalidate()` 在 5.2 变成 internal、`SetToolFromType` 被改名成 `SetTool`），
+5.1 和 5.2 都能加载。
 
 ## 用法
 
@@ -139,4 +152,4 @@ B 通道         ← 隐藏
 | `ChannelEditorDialog.cs` | 色阶效果的配置对话框（4 个标签页 + 映射预览条） |
 | `ChannelEditorToken.cs` | 色阶效果的参数 token |
 | `ChannelLevels.cs` | 单通道的色阶参数与 256 项 LUT 生成 |
-| `ChannelEditor.csproj` | net9.0-windows + unsafe |
+| `ChannelEditor.csproj` | `net11.0-windows` + unsafe，引用本机 Paint.NET 的 `PaintDotNet.*.dll` |

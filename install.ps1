@@ -13,7 +13,7 @@
         1. finds ChannelEditor.dll next to this script (also checks bin\Release)
         2. scans for Paint.NET (registry uninstall entries / running process /
            file association / common paths)
-        3. checks that it is a .NET 9 build (Paint.NET 5.1+)
+        3. checks that it is a .NET 9+ build (Paint.NET 5.1+)
         4. closes a running Paint.NET if needed
         5. copies the dll into the Effects folder and removes any duplicate
            copy in the other plugin folder (so the plugin loads only once)
@@ -206,10 +206,10 @@ Write-Ok "Paint.NET directory: $paintNet"
 $runtimeConfig = Join-Path $paintNet "paintdotnet.runtimeconfig.json"
 if (Test-Path $runtimeConfig) {
     $json = Get-Content -Raw $runtimeConfig
-    if ($json -notmatch "net9\.0") {
-        Write-WarnMsg "This Paint.NET does not look like a .NET 9 build (5.1+). The plugin may not load."
+    if ($json -notmatch "net(9|10|11)\.0") {
+        Write-WarnMsg "This Paint.NET does not look like a .NET 9+ build (5.1+). The plugin may not load."
     } else {
-        Write-Ok "Version check passed (.NET 9 / Paint.NET 5.1+)"
+        Write-Ok "Version check passed (.NET 9+ / Paint.NET 5.1+)"
     }
 } else {
     Write-WarnMsg "paintdotnet.runtimeconfig.json not found, skipping version check"

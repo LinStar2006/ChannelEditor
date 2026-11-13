@@ -99,7 +99,9 @@ namespace ChannelEditor
 
             try
             {
-                MethodInfo setTool = workspace.GetType().GetMethod("SetToolFromType", new[] { typeof(Type) });
+                // Paint.NET 5.1 里这个方法叫 SetToolFromType，5.2 改名成了 SetTool，两个都试一下。
+                MethodInfo setTool = workspace.GetType().GetMethod("SetToolFromType", new[] { typeof(Type) })
+                    ?? workspace.GetType().GetMethod("SetTool", new[] { typeof(Type) });
                 if (setTool != null)
                 {
                     setTool.Invoke(workspace, new object[] { toolType });
@@ -408,7 +410,7 @@ namespace ChannelEditor
                     layer.Name = ChannelLayerNames[i];
                     layer.Visible = false;
                     document.Layers.Add(layer);
-                    layer.Invalidate();
+                    InvalidateLayer(layer);
                 }
 
                 // Paint.NET 的图层面板会把「最后创建的那一层」的缩略图显示成占位的文档合成图
@@ -453,6 +455,39 @@ namespace ChannelEditor
             for (int i = 0; i < existing.Count; i++)
             {
                 document.Layers.Remove(existing[i]);
+            }
+        }
+
+        /// <summary>
+        /// 让单个图层重新生成渲染缓存。
+        /// Paint.NET 5.2 把 Layer.Invalidate() 从 public 改成了 internal（编译期直接调用会
+        /// 报 CS0122，硬编码到 IL 里则运行时抛 MethodAccessException），所以这里统一走反射：
+        /// 拿到就调用，拿不到就什么也不做（调用方通常还会再调一次 document.Invalidate()）。
+        /// </summary>
+        private static void InvalidateLayer(Layer layer)
+        {
+            if (layer == null)
+            {
+                return;
+            }
+
+            try
+            {
+                MethodInfo method = layer.GetType().GetMethod(
+                    "Invalidate",
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                    null,
+                    Type.EmptyTypes,
+                    null);
+
+                if (method != null)
+                {
+                    method.Invoke(layer, null);
+                }
+            }
+            catch
+            {
+                // 反射失败（比如方法签名又变了）时静默跳过，不影响主流程。
             }
         }
 
@@ -562,7 +597,7 @@ namespace ChannelEditor
                 if (intoOriginalLayer && baseLayer != null)
                 {
                     CopySurface(result, baseLayer.Surface);
-                    baseLayer.Invalidate();
+                    InvalidateLayer(baseLayer);
                 }
                 else
                 {
